@@ -127,11 +127,11 @@ public class HttpRequestHandler {
             String initialQueryBuilderStr = initialQuery == null ? "" : initialQuery;
 
             Iterator<String> keys = params.keys();
-            
+
             if (!keys.hasNext()) {
                 return this;
             }
-            
+
             StringBuilder urlQueryBuilder = new StringBuilder(initialQueryBuilderStr);
 
             // Build the new query string
@@ -228,16 +228,7 @@ public class HttpRequestHandler {
         InputStream errorStream = connection.getErrorStream();
         String contentType = connection.getHeaderField("Content-Type");
 
-        if (errorStream != null) {
-            if (isOneOf(contentType, APPLICATION_JSON, APPLICATION_VND_API_JSON)) {
-                return parseJSON(readStreamAsString(errorStream));
-            } else {
-                return readStreamAsString(errorStream);
-            }
-        } else if (contentType != null && contentType.contains(APPLICATION_JSON.getValue())) {
-            // backward compatibility
-            return parseJSON(readStreamAsString(connection.getInputStream()));
-        } else {
+        if (responseType != null) {
             InputStream stream = connection.getInputStream();
             switch (responseType) {
                 case ARRAY_BUFFER:
@@ -250,6 +241,15 @@ public class HttpRequestHandler {
                 default:
                     return readStreamAsString(stream);
             }
+        } else if (errorStream != null) {
+            if (isOneOf(contentType, APPLICATION_JSON, APPLICATION_VND_API_JSON)) {
+                return parseJSON(readStreamAsString(errorStream));
+            } else {
+                return readStreamAsString(errorStream);
+            }
+        } else if (contentType != null && contentType.contains(APPLICATION_JSON.getValue())) {
+            // backward compatibility
+            return parseJSON(readStreamAsString(connection.getInputStream()));
         }
     }
 
@@ -504,9 +504,9 @@ public class HttpRequestHandler {
         CapacitorHttpUrlConnection connection = connectionBuilder.build();
         connection.setDoOutput(true);
 
-        FormUploader builder = new FormUploader(connection.getHttpConnection());
+        FileUploader builder = new FileUploader(connection.getHttpConnection());
         builder.addFilePart(name, file, data);
-        builder.finish();
+
 
         return buildResponse(connection, responseType);
     }
