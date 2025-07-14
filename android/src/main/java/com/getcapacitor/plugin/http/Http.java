@@ -21,8 +21,8 @@ import java.net.URI;
 @CapacitorPlugin(
     name = "Http",
     permissions = {
-        @Permission(strings = { Manifest.permission.WRITE_EXTERNAL_STORAGE }, alias = "HttpWrite"),
-        @Permission(strings = { Manifest.permission.WRITE_EXTERNAL_STORAGE }, alias = "HttpRead")
+        @Permission(strings = { Manifest.permission.READ_MEDIA_IMAGES }, alias = "HttpWrite"),
+        @Permission(strings = { Manifest.permission.READ_MEDIA_IMAGES }, alias = "HttpRead")
     }
 )
 public class Http extends Plugin {
@@ -137,7 +137,7 @@ public class Http extends Plugin {
 
             if (
                 !FilesystemUtils.isPublicDirectory(fileDirectory) ||
-                isStoragePermissionGranted(call, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                isStoragePermissionGranted(call, Manifest.permission.READ_MEDIA_IMAGES)
             ) {
                 call.release(bridge);
 
@@ -184,7 +184,7 @@ public class Http extends Plugin {
 
             if (
                 !FilesystemUtils.isPublicDirectory(fileDirectory) ||
-                isStoragePermissionGranted(call, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                isStoragePermissionGranted(call, Manifest.permission.READ_MEDIA_IMAGES)
             ) {
                 call.release(bridge);
                 JSObject response = HttpRequestHandler.uploadFile(call, getContext());

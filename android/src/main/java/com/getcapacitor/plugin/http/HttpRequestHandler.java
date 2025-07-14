@@ -251,6 +251,7 @@ public class HttpRequestHandler {
             // backward compatibility
             return parseJSON(readStreamAsString(connection.getInputStream()));
         }
+        return "Set Response TYPE !!!";
     }
 
     /**

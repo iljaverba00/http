@@ -26,7 +26,7 @@ public class FileUploader {
             }
             outputStream.flush();
         } finally {
-            outputStream.close(); // закрываем outputStream в любом случае
+            outputStream.close();
         }
     }
 }
