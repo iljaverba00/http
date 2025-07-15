@@ -1,6 +1,7 @@
 package com.getcapacitor.plugin.http;
 
 import android.Manifest;
+import android.os.Build;
 import android.util.Log;
 import com.getcapacitor.CapConfig;
 import com.getcapacitor.JSArray;
@@ -18,13 +19,7 @@ import java.net.URI;
 /**
  * Native HTTP Plugin
  */
-@CapacitorPlugin(
-    name = "Http",
-    permissions = {
-        @Permission(strings = { Manifest.permission.READ_MEDIA_IMAGES }, alias = "HttpWrite"),
-        @Permission(strings = { Manifest.permission.READ_MEDIA_IMAGES }, alias = "HttpRead")
-    }
-)
+@CapacitorPlugin(name = "Http")
 public class Http extends Plugin {
 
     public static final int HTTP_REQUEST_DOWNLOAD_WRITE_PERMISSIONS = 9022;
@@ -32,6 +27,23 @@ public class Http extends Plugin {
 
     CapConfig capConfig;
     CapacitorCookieManager cookieManager;
+
+    private String[] getPermissions() {
+        String[] permissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[] { Manifest.permission.READ_MEDIA_IMAGES };
+        } else {
+            permissions = new String[] { Manifest.permission.READ_EXTERNAL_STORAGE };
+        }
+
+        return permissions;
+    }
+
+    private void requestMediaPermissions() {
+        String[] permissions = getPermissions();
+        pluginRequestPermissions(permissions, 1001);
+    }
 
     /**
      * Helper function for getting the serverUrl from the Capacitor Config. Returns an empty
@@ -97,6 +109,7 @@ public class Http extends Plugin {
         this.cookieManager = new CapacitorCookieManager(null, java.net.CookiePolicy.ACCEPT_ALL);
         java.net.CookieHandler.setDefault(cookieManager);
         capConfig = getBridge().getConfig();
+        requestMediaPermissions();
     }
 
     @PluginMethod
@@ -135,10 +148,7 @@ public class Http extends Plugin {
             bridge.saveCall(call);
             String fileDirectory = call.getString("fileDirectory", FilesystemUtils.DIRECTORY_DOCUMENTS);
 
-            if (
-                !FilesystemUtils.isPublicDirectory(fileDirectory) ||
-                isStoragePermissionGranted(call, Manifest.permission.READ_MEDIA_IMAGES)
-            ) {
+            if (!FilesystemUtils.isPublicDirectory(fileDirectory) || isStoragePermissionGranted(call, getPermissions()[0])) {
                 call.release(bridge);
 
                 HttpRequestHandler.ProgressEmitter emitter = new HttpRequestHandler.ProgressEmitter() {
@@ -182,10 +192,7 @@ public class Http extends Plugin {
             String fileDirectory = call.getString("fileDirectory", FilesystemUtils.DIRECTORY_DOCUMENTS);
             bridge.saveCall(call);
 
-            if (
-                !FilesystemUtils.isPublicDirectory(fileDirectory) ||
-                isStoragePermissionGranted(call, Manifest.permission.READ_MEDIA_IMAGES)
-            ) {
+            if (!FilesystemUtils.isPublicDirectory(fileDirectory) || isStoragePermissionGranted(call, getPermissions()[0])) {
                 call.release(bridge);
                 JSObject response = HttpRequestHandler.uploadFile(call, getContext());
                 call.resolve(response);
